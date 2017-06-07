@@ -9,6 +9,15 @@ I am aware that there are many Discord Music bots out there. I choose to build o
 After cloning or downloading the current master branch, simply run `npm install` in the folder, and `npm` will take care of the rest. However, this bot makes use of Discord.Js, and as a result needs a couple other steps to get running.
 
 1. Ensure the FFMPEG is available on your machine and can be accessed via the command line from anywhere, i.e FFMPEG is in your PATH.
+2. Ensure that the folders `audio`, `database`, `logs` have all been created. As the system doesn't do it for itself.
+
+On Linux:
+
+1. `sudo apt-get install build-essential`
+
+On Windows:
+
+1. You need Visual Studio and Python 2.7.
 
 ### Setting up the bot
 
@@ -42,6 +51,45 @@ The bot is setup in such a way that you don't have to touch any of the code. All
 - Discord.vChannel.id is the id of the channel to connect to. Only used if `connectBy` is set to `id`.
 - User_roles are the current available roles for the bot. `admin` and `public` are the only roles currently available.
 - Users.admin is an array of ids which will contain all the user ids for the users you wish to grant administration permissions to.
+
+### BONUS: Setting Up PlayMusic As a Service On Linux
+
+This is what I use to keep my bot running all the time.
+
+1. Create a new user and give it permissions for a folder on your install.
+  - I used `/var/bot/PlayMusic` for the location and `playmusic` as the user.
+  - Give the `playuser` permissions for the `/var/bot/PlayMusic` folder.
+2. As a user with `sudo` create the file `/etc/systemd/system/playmusic.service`. The Service I used was custom taliored for a Ubunut 17.04 Server Install.
+
+```bash
+[Unit]
+Description=PlayMusic
+After=network.target
+
+[Service]
+Type=simple
+
+WorkingDirectory=/var/bot/PlayMusic
+User=playmusic
+Group=playmusic
+
+ExecStart=/usr/local/bin/node /var/bot/PlayMusic/pm.js
+Restart=always
+SyslogIdentifier=PlayMusic
+
+[Install]
+WantedBy=multi-user.target
+```
+
+3. Then run the following lines.
+
+```bash
+systemctl enable playmusic.service
+systemctl start playmusic.service
+```
+
+- `systemctl enable playmusic.service` ensures the services runs on startup.
+- `systemctl starts playmusic.service` starts the process immediately.
 
 ## Features
 
