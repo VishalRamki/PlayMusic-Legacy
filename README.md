@@ -10,6 +10,39 @@ After cloning or downloading the current master branch, simply run `npm install`
 
 1. Ensure the FFMPEG is available on your machine and can be accessed via the command line from anywhere, i.e FFMPEG is in your PATH.
 
+### Setting up the bot
+
+The bot is setup in such a way that you don't have to touch any of the code. All the user settings are found in the `settings.json` file. I have provided an example file called `settings.example.js` make sure to modify it and convert it to `settings.json`.
+
+#### Example of settings.json
+
+```json
+{
+  "discord": {
+    "bot_token": "YOUR_BOT_TOKEN",
+    "vChannel": {
+      "connectBy": "id OR name",
+      "name": "CHANNEL_NAME",
+      "id": "CHANNEL_ID"
+    }
+  },
+  "user_roles": ["admin", "public"],
+  "users": {
+    "admin": ["ADMIN_ID"],
+    "public": []
+  }
+}
+
+```
+
+- Discord.bot_token is used to connect your code to the Discord Bot Account.
+- Discord.vChannel is the object which contains the information relating to the voice channel.
+- Discord.vChannel.connectBy is the method to connect to the channel, either using its `name` or `id`.
+- Discord.vChannel.name is the name of the channel to connect to. Only used if `connectBy` is set to `name`.
+- Discord.vChannel.id is the id of the channel to connect to. Only used if `connectBy` is set to `id`.
+- User_roles are the current available roles for the bot. `admin` and `public` are the only roles currently available.
+- Users.admin is an array of ids which will contain all the user ids for the users you wish to grant administration permissions to.
+
 ## Features
 
 ### Music Commands;
