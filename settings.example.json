@@ -1,0 +1,16 @@
+{
+  "discord": {
+    "bot_token": "YOUR_BOT_TOKEN",
+    "vChannel": {
+      "connectBy": "id",
+      "name": "CHANNEL_NAME",
+      "id": "CHANNEL_ID"
+    },
+    "cmd_prefix": "/"
+  },
+  "user_roles": ["admin", "public"],
+  "users": {
+    "admin": ["YOUR_DISCORD_USER_ID"],
+    "public": []
+  }
+}

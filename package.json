@@ -1,0 +1,30 @@
+{
+  "name": "wesvrplaymusic",
+  "version": "1.0.0",
+  "description": "Public Build of the Music bot used by WeSVR Game Guild.",
+  "main": "pm.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "discord",
+    "music",
+    "bot"
+  ],
+  "author": "VariableOverload",
+  "license": "ISC",
+  "dependencies": {
+    "bufferutil": "^3.0.1",
+    "discord.js": "^11.1.0",
+    "erlpack": "github:hammerandchisel/erlpack",
+    "es6-shim": "^0.35.3",
+    "libsodium-wrappers": "^0.5.1",
+    "moment": "^2.18.1",
+    "momentjs": "^2.0.0",
+    "nedb": "^1.8.0",
+    "node-opus": "^0.2.6",
+    "opusscript": "0.0.3",
+    "uws": "^0.14.5",
+    "ytdl-core": "^0.14.2"
+  }
+}
