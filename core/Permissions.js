@@ -13,19 +13,24 @@ var Permissions = function (opts) {
 };
 
 Permissions.prototype.userAllowedAccess = function (user, fnName) {
+  /*
+    Public functions are just that. Public. Allows anyone with access to the
+    server to use public functions. They don't have to be added to bot's role
+    system.
+  */
+  if (this.isPublicFunction(fnName)) return true;
   var userObject = this.users[user];
   if (!userObject) return false;
-  console.log(user);
-  console.log(fnName);
-  console.log(this.usersInRoles);
-  console.log(this.users);
-  console.log(this.roles);
+  // console.log(user);
+  // console.log(fnName);
+  // console.log(this.usersInRoles);
+  // console.log(this.users);
+  // console.log(this.roles);
   /*
     @TODO
     This function call has the potential to be a very expensive call as the
     the number of functions increase.
   */
-  if (this.isPublicFunction(fnName)) return true;
   for (var i = 0 ; i < userObject.roles.length; i++) {
     if (this.roles[userObject.roles[i]].indexOf(fnName) > -1) {
     // fnName is inside the role pool that this user was assigned to;

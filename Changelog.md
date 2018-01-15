@@ -1,5 +1,9 @@
 # PlayMusic Changelog
 
+## v0.6.1 HF#1 - DenyPublic
+
+- The code was organized in a way that prevented access to users to public functions. This hotfix addresses the issue.
+
 ## v0.6.1 - Minor Bug Fixes, Quality of Life Improvements
 
 - The max song length can now be changed via the `settings.json` file.
