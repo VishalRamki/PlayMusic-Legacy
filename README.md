@@ -4,6 +4,18 @@
 
 I am aware that there are many Discord Music bots out there. I choose to build one for both practice and the server I am part of. It was quite interesting to build the first version, and the to refactor the code for a public release. At the current time, the system can only pull music from YouTube at the moment, though this is set to change. This Bot makes a cache of the audio files, since the bot was originally meant to be hosted on a Personal Windows Machine, where we were starving for bandwidth. While this current version of the Bot isn't as robust as other offerings on the internet, its quite simple to use and setup. At least I think so.
 
+## Current Version - v0.6.1
+
+This version is more of preparing stage version. There are two major versions currently on the road map. This version sees a revamped Permissions system. Simply add your admin ids to the pool in the `settings.json` file and the bot will only allow admin functions to those users.
+
+This version sees streamlined updates and quality of life changes, making it easier for you to change the max song length. There are a couple other under the hood improvements and improvements to presentations.
+
+## Roadmap
+
+### Short Term
+
+- Flesh out permissions system so that the user never has to touch code to add functions to different user roles.
+
 ## Installation
 
 After cloning or downloading the current master branch, simply run `npm install` in the folder, and `npm` will take care of the rest. However, this bot makes use of Discord.Js, and as a result needs a couple other steps to get running.

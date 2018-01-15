@@ -6,11 +6,23 @@
       "name": "CHANNEL_NAME",
       "id": "CHANNEL_ID"
     },
-    "cmd_prefix": "/"
+    "cmd_prefix": "/",
+    "listenOnOneTextChannel": false,
+    "tChannel": {
+      "connectBy": "id",
+      "name": "CHANNEL_NAME",
+      "id": "CHANNEL_ID"
+    }
+  },
+  "song": {
+    "maxLength": {
+      "int": 1200,
+      "str": "20minutes"
+    }
   },
   "user_roles": ["admin", "public"],
   "users": {
-    "admin": ["YOUR_DISCORD_USER_ID"],
+    "admin": ["ADMIN_ID"],
     "public": []
   }
 }

@@ -5,6 +5,7 @@ require("es6-shim");
 var fs = require('fs');
 var Datastore = require('nedb');
 var db = new Datastore({ filename: 'database/audiodata.db', autoload: true });
+var userDb = new Datastore({filename: 'database/users.db', autoload: true});
 var ytdl = require("ytdl-core");
 var worker = require("child_process");
 // Extra Functionality
@@ -14,10 +15,17 @@ var Log = require("./core/Logger.js");
 var Playlist = require("./core/PlayList.js");
 var ThreadWork = require("./core/ThreadWork.js");
 var MomentJS = require("moment");
-
+var Perm = require("./core/Permissions.js");
 // options;
 var UserOptions = require("./settings.json");
 // console.log(UserOptions);
+//
+UserOptions.users.admin.forEach(function(id) {
+  // console.log(PermissionsSystem);
+  Perm.addUserToPool(id);
+  Perm.addUserToRole(id, "admin");
+});
+
 
 // inits
 var logger = new Log(fs, MomentJS);
@@ -26,14 +34,16 @@ var bot = new Bot({
   log: logger,
   client: client,
   fs: fs,
-  db: db
+  db: db,
+  permissionsSystem: Perm
 });
 var threadwork = new ThreadWork({
   process: new ThreadWorker(worker),
   db: db,
   ytdl: ytdl,
   bot: bot,
-  log: logger
+  log: logger,
+  maxSongLength: UserOptions.song.maxLength
 });
 var playlist = new Playlist({
   bot: bot,
@@ -65,23 +75,57 @@ client.on('ready', () => {
   }
 });
 
+function allowedHere(id, name) {
+  if (UserOptions.discord.tChannel.connectBy === "name") {
+    if (UserOptions.discord.tChannel.name === name) return true;
+  } else if (UserOptions.discord.tChannel.connectBy === "id") {
+    if (UserOptions.discord.tChannel.id === id) return true;
+  }
+  return false;
+}
+
 client.on("message", message => {
+  console.log(message);
   if (bot.isBotCommand(message.content)) {
     // it is a bot command;
-    // so get the command and pass it to the specific function;
-    console.log("Bot Called Upon: " + message.content);
-    logger.log(message.content + " requested.");
-    // pull the command
-    var currentCmd = bot.getCommand(message.content);
-    console.log("Command Requested: " + currentCmd.command);
-
-    // now execute the required command;
-    // cmdExecute(currentCmd, message);
-    bot.commandExec(currentCmd, message);
+    // check if the bot listen globally on the server it was added to
+    if (!UserOptions.discord.listenOnOneTextChannel) {
+      bot.carryOutCommand(message, logger);
+      return;
+    }
+    // the bot was told to listen to a particular channel.
+    if (allowedHere(message.channel.id, message.channel.name)) {
+      // it is allowed to be called here;
+      bot.carryOutCommand(message, logger);
+    } else {
+      message.author.send("Please Use the Channel that has been put aside for the bot: <#"+UserOptions.discord.tChannel.id+">");
+    }
   }
 });
 
 client.login(UserOptions.discord.bot_token);
+
+/*******************************
+**  Adds "/send_logs" command
+**  COMMAND: /send_logs
+**  ARGS: STRING (MAX LENGTH)
+*******************************/
+
+bot.addCmdExec("logs", function(cmd, djs) {
+  // logs the the message text to the end of bugs.txt
+  // this.log.bug("bugs.txt", message.content);
+  // console.log();
+  var now = MomentJS(new Date()).format("YYYY-MM-DD");
+  djs.author.send("The log data for "+now);
+  djs.author.send("Comprehensive log data will only be allowed via direct file system.");
+  // replys
+  djs.author.sendFile("logs/"+now+".log");
+  djs.author.sendFile("bugs.txt");
+}, "admin");
+
+bot.addCmdExec("notevenadmin", function(cmd, djs) {
+  console.log("Not even the admin has access to this function");
+}, "not_admin");
 
 /*******************************
 **  Adds "/bug" command
@@ -91,9 +135,9 @@ client.login(UserOptions.discord.bot_token);
 
 bot.addCmdExec("bug", function(cmd, djs) {
   // logs the the message text to the end of bugs.txt
-  this.log.bug("bugs.txt", message.content);
+  this.log.bug("bugs.txt", djs.content);
   // replys
-  djs.reply("I've told the dumbass.");
+  djs.reply("Bug Has Been Noted.");
 });
 
 /*******************************
@@ -138,6 +182,8 @@ bot.addCmdExec("play", function(cmd, djs) {
     // it actuals produces bugs otherwise.
     return;
   }
+
+  // determines if an artist was selected;
 
   // determines if the song was requested by its title.
   if (this.findByTitle(cmd.args)) {
@@ -284,12 +330,12 @@ bot.addCmdExec("library", function(cmd, djs) {
       // sends an embeded message to the text channel.
       djs.channel.send({embed: {
           color: 3447003,
-          description: "Page 1/"+(otherthis.currentTotal/10),
+          description: "",
           fields: otherthis.buildQueryList(docs),
           // timestamp: new Date(),
           footer: {
-            icon_url: client.user.avatarURL,
-            text: ''
+            // icon_url: client.user.avatarURL,
+            text: "Page 1/"+(Math.ceil(otherthis.currentTotal/10))
           }
         }
       });
@@ -308,18 +354,23 @@ bot.addCmdExec("library", function(cmd, djs) {
     var skipValue = pg.pgNum * 10;
 
     var otherthis = this;
+    // determines if the page requested is greater than the amount the library has.
+    if (pg.pgNum > Math.ceil(otherthis.currentTotal/10)) {
+      djs.channel.send("There is no library page that corresponds to the requested page number.");
+      return;
+    }
     // extracts the next 10 entries after skipValue from the db in alphabetical order.
     this.db.find({}).sort({artist: 1}).skip(skipValue).limit(10).exec(function(err, docs) {
       // sends embeded message to channel;
       djs.channel.send({embed: {
           color: 3447003,
           title: 'Music Library',
-          description: "Page "+pg.pgNum+"/"+(otherthis.currentTotal/10),
+          description: "",
           fields: otherthis.buildQueryList(docs),
           // timestamp: new Date(),
           footer: {
-            icon_url: client.user.avatarURL,
-            text: ''
+            // icon_url: client.user.avatarURL,
+            text: "Page "+pg.pgNum+"/"+(Math.ceil(otherthis.currentTotal/10))
           }
         }
       });

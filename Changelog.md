@@ -1,5 +1,46 @@
 # PlayMusic Changelog
 
+## v0.6.1 - Minor Bug Fixes, Quality of Life Improvements
+
+- The max song length can now be changed via the `settings.json` file.
+
+```
+"song": {
+  "maxLength": {
+    "int": 1200,
+    "str": "20minutes"
+  }
+}
+```
+
+- The bot can now properly handle filing of bugs.
+- Fixed the Page numbers displaying incorrectly. Previously would display `x.x`, now it displays a rounded up figure.
+- Cleaned up the library embeds. Also prevented library pages that do not exist from being sent to the feed.
+- You can tell the bot if there is a specific channel you want it to communicate on alone, this is useful for preventing clutter in your channels. Once you've put the ID of the channel you want as the bot channel, if a user attempts to communicate to the bot outside of this channel, the bot will PM the user with a link to the correct channel.
+
+```
+"listenOnOneTextChannel": true,
+"tChannel": {
+  "connectBy": "id",
+  "name": "general",
+  "id": "237377316970430475"
+}
+```
+## v0.6 => Major Update, Permissions Changes, Code Restructuring
+
+Date:
+
+- Changed the way the permissions are handled in the code.
+- Added the ability to add roles, set functions to roles, and allows certain users access to different roles.
+- Added the function to allow the adminstrator to receive log files without logging into their server.
+- Changed the response of the bot from standard markdown to formatted tables that Discord allows.
+
+## v0.5.3 => Quick update
+
+Date: 19/07/17
+
+- Added `/logs` command, which is only sent to the individuals that are set by the Admin. It also sends you the text file with any reported bugs.
+
 ## v0.5.2 => Bug Fixes, Update to Library Function, Basic Permissions added.
 
 Date: 07/06/17

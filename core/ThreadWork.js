@@ -4,6 +4,7 @@ module.exports = function(options) {
   this.ytdl = options.ytdl;
   this.bot = options.bot;
   this.log = options.log;
+  this.maxSongLength = options.maxSongLength;
 
   this.getYTId = function(url) {
     url = url.replace("http://www.youtube.com/watch?v=", "");
@@ -85,9 +86,9 @@ module.exports = function(options) {
       inside.log.log("Any Errors? :: " + err);
       inside.log.log("Attempting to Collect Data from "+ inside.tearANDS(url)+"");
       // console.log(info);
-      if (info.length_seconds > 600) {
+      if (info.length_seconds > inside.maxSongLength.int) {
         inside.log.log("Requested Youtube File was too long.");
-        djs.reply("Your requested audio was too long, please select a video that is less than 10minutes long.");
+        djs.reply("Your requested audio was too long, please select a video that is less than "+inside.maxSongLength.str+" long.");
         return;
       }
       inside.process.spawn("node pm_ytdl.js --url "+inside.tearANDS(url)+ " --vid "+info.video_id, function(std) {

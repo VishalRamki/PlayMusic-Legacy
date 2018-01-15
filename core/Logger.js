@@ -16,7 +16,7 @@ module.exports = function(fs, mjs) {
   };
 
   this.bug = function(file, msg) {
-    var toLog = mjs().format("dddd, MMMM Do YYYY, h:mm:ss a"); + ": ";
+    var toLog = mjs().format("dddd, MMMM Do YYYY, h:mm:ss a") + ": ";
     this.fs.appendFile(file, toLog + msg + "\n", (err) => {
       if (err) throw err;
     });
