@@ -6,6 +6,7 @@ var fs = require('fs');
 var Datastore = require('nedb');
 var db = new Datastore({ filename: 'database/audiodata.db', autoload: true });
 var userDb = new Datastore({filename: 'database/users.db', autoload: true});
+var audioMeta = new Datastore({filename: 'database/audioMeta.db', autoload: true});
 var ytdl = require("ytdl-core");
 var worker = require("child_process");
 // Extra Functionality
@@ -16,6 +17,8 @@ var Playlist = require("./core/PlayList.js");
 var ThreadWork = require("./core/ThreadWork.js");
 var MomentJS = require("moment");
 var Perm = require("./core/Permissions.js");
+var artistTitle = require("get-artist-title");
+var ams = require("./core/audiometa.js");
 // options;
 var UserOptions = require("./settings.json");
 // console.log(UserOptions);
@@ -40,15 +43,23 @@ var bot = new Bot({
 var threadwork = new ThreadWork({
   process: new ThreadWorker(worker),
   db: db,
+  adb: audioMeta,
   ytdl: ytdl,
   bot: bot,
   log: logger,
-  maxSongLength: UserOptions.song.maxLength
+  maxSongLength: UserOptions.song.maxLength,
+  artistTitle: artistTitle
+});
+var audioMetaSystem = new ams({
+  db: audioMeta,
+  log: logger
 });
 var playlist = new Playlist({
   bot: bot,
-  logger: logger
+  logger: logger,
+  adb: audioMetaSystem
 });
+
 
 
 
@@ -85,7 +96,6 @@ function allowedHere(id, name) {
 }
 
 client.on("message", message => {
-  console.log(message);
   if (bot.isBotCommand(message.content)) {
     // it is a bot command;
     // check if the bot listen globally on the server it was added to
@@ -141,6 +151,29 @@ bot.addCmdExec("bug", function(cmd, djs) {
 });
 
 /*******************************
+**  Adds "/random" command
+**  COMMAND: /random
+**  ARGS:
+*******************************/
+
+bot.addCmdExec("random", function(cmd, djs) {
+  var out = this;
+  this.db.count({}, function(err, count) {
+    if (!err && count > 0) {
+      var skipCount = Math.floor(Math.random() * count);
+
+      db.find({}).skip(skipCount).limit(1).exec(function (err2, docs){
+        if (!err2) {
+          out.playFile(docs[0], djs);
+          audioMetaSystem.incrementPlay(docs[0]);
+        }
+      });
+    }
+  });
+});
+
+
+/*******************************
 **  Adds "/play" command
 **  COMMAND: /play
 **  ARGS: URL OR
@@ -164,7 +197,7 @@ bot.addCmdExec("play", function(cmd, djs) {
 
     // locate the cache;
     this.db.findOne({video_id: this.thread.getYTId(cmd.args)}, function(err, doc) {
-      console.log(doc);
+      // console.log(doc);
       if (doc != null) {
         // song exist in cache
         console.log("Song Requested: " + doc.title + " By Artist: " + doc.artist + " By Youtube Video ID: " + doc.video_id);
@@ -193,7 +226,7 @@ bot.addCmdExec("play", function(cmd, djs) {
     if (/\S/.test(cmd.args)) {
       // attempts to locate the song via its title;
       this.db.find({title: {"$regex": new RegExp(cmd.args, "i")}}, function(err, doc)  {
-        console.log(doc);
+        // console.log(doc);
         if (doc && doc.length === 1) {
           // a single song has been found by title;
           console.log("Song Requested: " + doc[0].title + " By Artist: " + doc[0].artist);
@@ -204,11 +237,17 @@ bot.addCmdExec("play", function(cmd, djs) {
           console.log("Multiple Songs found for search query.");
           out.log.log("Multiple Songs found for search query: "+cmd.args);
           djs.reply("Multiple Songs that have this title, or contain these words. Please Review which Your Selection.");
-          djs.reply(out.buildQueryList(doc));
+          djs.channel.send({embed: {
+              color: 3447003,
+              description: "These are the results of your query: '" + cmd.args +"'",
+              fields: out.buildQueryList(doc)
+              // timestamp: new Date(),
+            }
+          });
         } else {
           // no songs found;
-          out.log.log("No Matching Song/Artist Found for the query: "+cmd.args);
-          djs.reply("No Matching Song/Artist Found.");
+          out.log.log("No Matching Song Found for the query: "+cmd.args);
+          djs.reply("No Matching Song Found.");
         }
       });
     } else {
@@ -298,6 +337,9 @@ bot.addCmdExec("resume", function(cmd, djs) {
     // logs;
     console.log("Playlist Song Resume.");
     this.log.log("Audio Resumed.");
+  } else if (!this.pl.isPlaying) {
+    // this determines if there is more in the playlist to be played;
+    this.pl.play(this.getVoiceConnection());
   }
 });
 
@@ -325,7 +367,7 @@ bot.addCmdExec("library", function(cmd, djs) {
   if (cmd.args.indexOf("pg") === -1) {
     var otherthis = this;
     // extracts the first 10 entries from the db in alphabetical order.
-    this.db.find({}).sort({artist: 1}).limit(10).exec(function(err, docs) {
+    this.db.find({}).sort({artist: 1, title: 1}).limit(10).exec(function(err, docs) {
       // djs.channel.send("```"+otherthis.buildQueryList(docs)+"```");
       // sends an embeded message to the text channel.
       djs.channel.send({embed: {
@@ -360,7 +402,7 @@ bot.addCmdExec("library", function(cmd, djs) {
       return;
     }
     // extracts the next 10 entries after skipValue from the db in alphabetical order.
-    this.db.find({}).sort({artist: 1}).skip(skipValue).limit(10).exec(function(err, docs) {
+    this.db.find({}).sort({artist: 1, title: 1}).skip(skipValue).limit(10).exec(function(err, docs) {
       // sends embeded message to channel;
       djs.channel.send({embed: {
           color: 3447003,
@@ -410,7 +452,7 @@ bot.addCmdExec("next", function(cmd, djs) {
 **  ARGS: [#]
 *******************************/
 bot.addCmdExec("volume", function(cmd, djs) {
-  console.log(cmd.args);
+  // console.log(cmd.args);
   // parses the integer value;
   var vol = parseInt(cmd.args);
   // ensures it is an integer value;
@@ -459,6 +501,10 @@ bot.addCmdExec("help", function(cmd, djs) {
       return console.log(err);
     }
     // console.log(data);
-    djs.channel.send("```" + data +"```");
+    var str = "```markdown\n";
+    str += data +"\n";
+    str += "```";
+    djs.channel.send(str+"");
+    // djs.channel.send("```md " + data +" ```");
   });
 });

@@ -1,5 +1,34 @@
 # PlayMusic Changelog
 
+## v0.6.2 - Major Quality Control/Update
+
+This is a relativly huge update which was meant to be pushed almost a month now. However, that never came to fruition. There are still bugs hidden randomly. Documentation needs to be rewritten, and these bugs squashed. At this moment the bot should be far more stable than anything we've had before.
+
+### Features
+
+- [FEATURE ADDITION] Added the ability to queue a random song from the database.
+- [FEATURE ADDITION] Added a basic Analytics system. It tracks which songs are being played the most, as well which songs are being requested.
+
+### Bug Fixes
+
+- [BUG] Fixed a bug which skipped two tracks when `/next` was called.
+- [BUG] Fixed a bug which caused `/stop` to not work as intended.
+- [BUG] Fixed an error which caused `/play` to return '[object Object]' instead of the actual meta data.
+
+### Quality Of Life changes
+
+- [QUALITY OF LIFE] Changed 'No Matching Song/Artist found' to reflect the fact that no song title matched the search query.
+- [QUALITY OF LIFE] Made changes to the way the `/help` function is presented on the text channel.
+- [QUALITY OF LIFE] Library is now Sorted by Artist then Song Title. It was previously sorted by Artist alone.
+- [QUALITY OF LIFE] Bot can now better extract artist and title data from youtube title.
+- [QUALITY OF LIFE] Changed the way the playlist was presenting its data.
+- [QUALITY OF LIFE] Bot now tells you when a song is playing, it also presents the song's meta data.
+
+### Misc.
+
+- Updated the NPM dependencies.
+- Changed the way features, bug fixes, and qol changes were represented in the Changelog file.
+
 ## v0.6.1 HF#1 - DenyPublic
 
 - The code was organized in a way that prevented access to users to public functions. This hotfix addresses the issue.

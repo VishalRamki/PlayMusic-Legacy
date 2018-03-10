@@ -1,10 +1,12 @@
 module.exports = function(options) {
   this.process = options.process;
   this.db = options.db;
+  this.adb = options.adb;
   this.ytdl = options.ytdl;
   this.bot = options.bot;
   this.log = options.log;
   this.maxSongLength = options.maxSongLength;
+  this.artistTitle = options.artistTitle;
 
   this.getYTId = function(url) {
     url = url.replace("http://www.youtube.com/watch?v=", "");
@@ -95,16 +97,23 @@ module.exports = function(options) {
         console.log(info.length);
         console.log(std.sErr);
         inside.log.log("Thread Errors? :: " + std.sErr);
-        var artistdata = inside.shatterX(info.title);
+        // var artistdata = inside.shatterX(info.title);
+        let [artist, title] = inside.artistTitle(info.title);
         inside.db.insert({
-          artist: artistdata.artist,
-          title: artistdata.title,
+          artist: artist,
+          title: title,
           path: "audio/"+info.video_id+".mp3",
           uploader: info.author,
           keywords: info.keywords,
           video_id: info.video_id,
           video_title: info.title
         });
+        inside.adb.insert({
+          audio_id: info.video_id,
+          plays: 0,
+          requests: 0
+        });
+        inside.adb.persistence.compactDatafile();
         console.log("Attempting to store video id: " + info.video_id);
         inside.log.log("Attempting to store video audio information into audio/"+info.video_id+".ogg");
         inside.db.persistence.compactDatafile();

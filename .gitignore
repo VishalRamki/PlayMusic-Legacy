@@ -1,1 +1,4 @@
 tg/
+settings.json
+node_modules/
+simple_test.js
